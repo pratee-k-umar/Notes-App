@@ -1,5 +1,5 @@
 import express from "express"
-import authMiddleware from "../middleware/authMiddleware.js"
+import authMiddleware from "../middleware/auth.js"
 import Note from "../models/Note.js"
 
 const router = express.Router()

@@ -1,25 +1,58 @@
-import { createContext, useState, useEffect } from "react"
+import { createContext, useState, useEffect } from "react";
 import axios from "axios";
 
-const authContext = createContext();
+export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem("token"));
+  const [loading, setLoading] = useState(true);
+
+  const apiClient = axios.create({
+    baseURL: "http://localhost:5000",
+  });
+
+  apiClient.interceptors.request.use((config) => {
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+    return config;
+  });
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      setUser(token);
-    }
-  }, []);
-  const login = async (email, password) => {
-    const { data } = await axios.post("/api/auth/logic", { email, password })
-    localStorage.setItem("token", data.token)
-    axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
-    setUser(data.token);
-  }
-  return <authContext.Provider value={{ user, login }}>{children}</authContext.Provider>
-}
+    const loadUser = async () => {
+      if (token) {
+        try {
+          const response = await apiClient.get("/api/user");
+          setUser(response.data);
+        } catch (error) {
+          console.log(error);
+        }
+      }
+      setLoading(false);
+    };
+    loadUser();
+  }, [token]);
 
-export default AuthProvider
+  const login = async (email, password) => {
+    try {
+      const response = await apiClient.post("/api/login", { email, password });
+      setToken(response.data.token);
+      localStorage.setItem("token", response.data.token);
+      setUser(response.data.user);
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  };
+
+  const logout = () => {
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem("token");
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, token, login, logout, loading }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};

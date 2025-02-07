@@ -1,12 +1,39 @@
-import mongoose from "mongoose"
+import mongoose from "mongoose";
 
-const NoteSchema = mongoose.Schema({
-  userId: mongoose.Schema.Types.ObjectId,
-  title: String,
-  content: String,
-  isAudioNode: Boolean
+const noteSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true 
+  },
+  title: { 
+    type: String,
+    required: true 
+  },
+  content: { 
+    type: String, 
+    required: true 
+  },
+  isAudio: { 
+    type: Boolean, 
+    default: false 
+  },
+  audioTranscription: { 
+    type: String 
+  },
+  createdAt: { 
+    type: Date, 
+    default: Date.now 
+  },
+  favorite: { 
+    type: Boolean, 
+    default: false 
+  },
+  image: { 
+    type: String 
+  }
 }, {
-  timeStamps: true
-})
+  timestamps: true
+});
 
-export default mongoose.model("Note", NoteSchema);
+export default mongoose.model('Note', noteSchema);
