@@ -1,21 +1,32 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import CircularProgress from "@mui/material/CircularProgress";
 import TextField from "@mui/material/TextField";
+import { AuthContext } from "../context/AuthContext";
+import PropTypes from 'prop-types';
+import Alert from "@mui/material/Alert";
 
 const Login = ({ loginModal, signUpModal }) => {
   const [loginLoading, setLoginLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [loginFormData, setLoginFormData] = useState({
     email: "",
     password: "",
   });
-  const loginSubmit = (e) => {
+  const { login } = useContext(AuthContext);
+  const loginSubmit = async (e) => {
     e.preventDefault();
     setLoginLoading(true);
-    setTimeout(() => {
+    setError(null);
+    try {
+      await login(loginFormData);
+      loginModal(); // Close the modal on success
+    } catch (error) {
+      setError(error.message);
+    } finally {
       setLoginLoading(false);
-    }, 1500);
+    }
   };
   const loginChange = (e) => {
     setLoginFormData({
@@ -30,6 +41,11 @@ const Login = ({ loginModal, signUpModal }) => {
           <h2>Welcome back</h2>
           <p>Please enter your details to sign in</p>
         </div>
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
         <form onSubmit={loginSubmit} className="login-form">
           <TextField
             label="Email address"
@@ -105,7 +121,7 @@ const Login = ({ loginModal, signUpModal }) => {
             </button>
             <button
               type="submit"
-              className={`submit-button ${loginLoading ? "loading" : ""}`}
+              className={`login-button ${loginLoading ? "loading" : ""}`}
               disabled={loginLoading}
             >
               {loginLoading ? (
@@ -122,6 +138,10 @@ const Login = ({ loginModal, signUpModal }) => {
       </div>
     </div>
   );
+};
+Login.propTypes = {
+  loginModal: PropTypes.func.isRequired,
+  signUpModal: PropTypes.func.isRequired,
 };
 
 export default Login;

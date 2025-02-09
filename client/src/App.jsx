@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import "./index.css";
 import HomeIcon from "@mui/icons-material/Home";
 import GradeIcon from "@mui/icons-material/Grade";
@@ -10,11 +10,13 @@ import CreateIcon from "@mui/icons-material/Create";
 import MicIcon from "@mui/icons-material/Mic";
 import SignUp from "./components/SignUp";
 import Login from "./components/Login";
+import { AuthContext } from "./context/AuthContext";
 
 const App = () => {
   const [signup, setSignup] = useState(false);
   const [login, setLogin] = useState(false);
   const token = localStorage.getItem("token");
+  const { user, logout, loading } = useContext(AuthContext);
   const signUpModal = () => {
     setSignup(!signup);
     if (login) setLogin(false);
@@ -23,18 +25,18 @@ const App = () => {
     setLogin(!login);
     if (signup) setSignup(false);
   };
+  if(loading) return <div className="loading"><p>Loading...</p></div>
   return (
     <div>
       {(signup || login) && <div className="background"></div>}
       <div className="app-container">
-        <div className={signup && "background"}></div>
         <aside className="sidebar">
           <div className="webname">
             <p className="logo">l</p>
             <p className="name">AI Notes</p>
           </div>
           <hr />
-          {token && (
+          {user && (
             <nav>
               <ul>
                 <li>
@@ -53,11 +55,11 @@ const App = () => {
             </nav>
           )}
           <div className="profile">
-            {token ? (
+            {user ? (
               <div>
                 <div className="profile-info">
                   <p className="profile-logo">lg</p>
-                  <p className="profile-name">Profile Name</p>
+                  <p className="profile-name">{user?.username}</p>
                 </div>
                 <KeyboardArrowUpIcon />
               </div>
@@ -70,7 +72,7 @@ const App = () => {
             )}
           </div>
         </aside>
-        {token ? (
+        {user ? (
           <main className="main-content">
             <div className="top-bar">
               <TextField
